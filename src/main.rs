@@ -83,9 +83,8 @@ fn get_dependencies(dir_name: &Path) -> Vec<String> {
             }
         }
     }
-
-}
     res
+}
 
 fn walk_dir(dir: &Path) -> LinkedList<String> {
     let mut res: LinkedList<String> = LinkedList::new();
