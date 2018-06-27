@@ -1,0 +1,7 @@
+[package]
+name = "auto_wmake"
+version = "0.1.0"
+authors = ["kurenaif <antyobido@gmail.com>"]
+
+[dependencies]
+regex = "0.2.10"
