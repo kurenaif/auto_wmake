@@ -133,7 +133,7 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String,
     res
 }
 
-fn temp(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
+fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
     let mut queue = VecDeque::new();
     for (node, degree) in in_degree {
         println!("{}, {}", node, degree);
@@ -169,7 +169,7 @@ fn main() {
         graph.get_mut(&edge.1).unwrap().push(edge.0);
     }
 
-    let mut queue = temp(&in_degree);
+    let mut queue = get_zero_in_degree(&in_degree);
 
     while let Some(target) = queue.pop_front() {
         println!("{}", target);
