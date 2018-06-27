@@ -7,7 +7,7 @@ use std::error::Error;
 use std::env;
 use std::ffi::OsStr;
 use std::collections::LinkedList;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use regex::Regex;
 
@@ -134,18 +134,39 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String,
 }
 
 fn main() {
+    let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
         Path::new(
-            "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam",
+            root_path,
         ),
         &mut HashSet::new(),
     );
-    println!("{:?}", edges);
     let mut graph : HashMap<String, Vec<String>> = HashMap::new();
+    let mut in_degree : HashMap<String, i32> = HashMap::new();
+    let mut queue = VecDeque::new();
+
     for edge in edges {
-        if !graph.contains_key(&edge.0) {
-            graph.insert(edge.0.clone(), Vec::new());
+        if !graph.contains_key(&edge.1) {
+            graph.insert(edge.1.clone(), Vec::new());
         }
-        graph.get_mut(&edge.0).unwrap().push(edge.1);
+        if !in_degree.contains_key(&edge.0) {
+            in_degree.insert(edge.0.clone(), 0);
+        }
+        if !in_degree.contains_key(&edge.1) {
+            in_degree.insert(edge.1.clone(), 0);
+        }
+        *in_degree.get_mut(&edge.0).unwrap() += 1;
+        graph.get_mut(&edge.1).unwrap().push(edge.0);
+    }
+
+    for (node, degree) in &in_degree {
+        println!("{}, {}", node, degree);
+        if *degree == 0 {
+            queue.push_back(node);
+        }
+    }
+
+    while let Some(target) = queue.pop_front() {
+        println!("{}", target);
     }
 }
