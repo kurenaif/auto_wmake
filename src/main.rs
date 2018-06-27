@@ -133,6 +133,17 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String,
     res
 }
 
+fn temp(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
+    let mut queue = VecDeque::new();
+    for (node, degree) in in_degree {
+        println!("{}, {}", node, degree);
+        if *degree == 0 {
+            queue.push_back(node.to_string());
+        }
+    }
+    queue
+}
+
 fn main() {
     let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
@@ -143,7 +154,6 @@ fn main() {
     );
     let mut graph : HashMap<String, Vec<String>> = HashMap::new();
     let mut in_degree : HashMap<String, i32> = HashMap::new();
-    let mut queue = VecDeque::new();
 
     for edge in edges {
         if !graph.contains_key(&edge.1) {
@@ -159,16 +169,14 @@ fn main() {
         graph.get_mut(&edge.1).unwrap().push(edge.0);
     }
 
-    for (node, degree) in &in_degree {
-        println!("{}, {}", node, degree);
-        if *degree == 0 {
-            queue.push_back(node);
-        }
-    }
+    let mut queue = temp(&in_degree);
 
     while let Some(target) = queue.pop_front() {
         println!("{}", target);
-        let nexts = graph.get_mut(target).unwrap();
-        println!("{:?}", nexts);
+        let nexts = graph.get_mut(&target).unwrap();
+        for nxt in nexts {
+            println!("{:?}", nxt);
+            *in_degree.get_mut(nxt).unwrap() -= 1;
+        }
     }
 }
