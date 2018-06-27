@@ -168,5 +168,7 @@ fn main() {
 
     while let Some(target) = queue.pop_front() {
         println!("{}", target);
+        let nexts = graph.get_mut(target).unwrap();
+        println!("{:?}", nexts);
     }
 }
