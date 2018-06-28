@@ -8,6 +8,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::collections::LinkedList;
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::process::Command;
 
 use regex::Regex;
 
@@ -136,7 +137,6 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String,
 fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
     let mut queue = VecDeque::new();
     for (node, degree) in in_degree {
-        println!("{}, {}", node, degree);
         if *degree == 0 {
             queue.push_back(node.to_string());
         }
@@ -145,7 +145,7 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
 }
 
 fn main() {
-    let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
+    let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
         Path::new(
             root_path,
@@ -156,6 +156,9 @@ fn main() {
     let mut in_degree : HashMap<String, i32> = HashMap::new();
 
     for edge in edges {
+        if !graph.contains_key(&edge.0) {
+            graph.insert(edge.0.clone(), Vec::new());
+        }
         if !graph.contains_key(&edge.1) {
             graph.insert(edge.1.clone(), Vec::new());
         }
@@ -173,10 +176,19 @@ fn main() {
 
     while let Some(target) = queue.pop_front() {
         println!("{}", target);
+        let out_command = Command::new("wmake")
+            .arg("-j4")
+            .current_dir(&target)
+            .output()
+            .expect("failed");
+        let out_string = out_command.stdout;
+        println!("{}", std::str::from_utf8(&out_string).unwrap());
         let nexts = graph.get_mut(&target).unwrap();
         for nxt in nexts {
-            println!("{:?}", nxt);
             *in_degree.get_mut(nxt).unwrap() -= 1;
+            if in_degree.get(nxt).unwrap() == &0 {
+                queue.push_back(nxt.to_string());
+            }
         }
     }
 }
