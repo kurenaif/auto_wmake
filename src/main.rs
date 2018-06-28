@@ -8,7 +8,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::collections::LinkedList;
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use regex::Regex;
 
@@ -145,7 +145,7 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
 }
 
 fn main() {
-    let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
+    let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
         Path::new(
             root_path,
@@ -176,13 +176,15 @@ fn main() {
 
     while let Some(target) = queue.pop_front() {
         println!("{}", target);
-        let out_command = Command::new("wmake")
+        let mut out_command = Command::new("wmake")
             .arg("-j4")
             .current_dir(&target)
-            .output()
-            .expect("failed");
-        let out_string = out_command.stdout;
-        println!("{}", std::str::from_utf8(&out_string).unwrap());
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .unwrap();
+        let status = out_command.wait();
+        println!("Exited with status {:?}", status);
         let nexts = graph.get_mut(&target).unwrap();
         for nxt in nexts {
             *in_degree.get_mut(nxt).unwrap() -= 1;
