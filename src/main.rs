@@ -145,7 +145,7 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
 }
 
 fn main() {
-    let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
+    let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
         Path::new(
             root_path,
