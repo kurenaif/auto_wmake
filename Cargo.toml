@@ -5,3 +5,4 @@ authors = ["kurenaif <antyobido@gmail.com>"]
 
 [dependencies]
 regex = "0.2.10"
+clap = "2.31.2"

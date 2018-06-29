@@ -1,4 +1,5 @@
 extern crate regex;
+extern crate clap;
 
 use std::io::Read;
 use std::path::Path;
@@ -9,6 +10,7 @@ use std::ffi::OsStr;
 use std::collections::LinkedList;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
+use clap::{App, Arg};
 
 use regex::Regex;
 
@@ -145,7 +147,13 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
 }
 
 fn main() {
-    let root_path = "/home/kurenaif/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
+
+    let app = App::new("auto_wmake")
+        .version("0.1")
+        .author("kurenaif <antyobido@gmail.com>")
+        .about("OpenFOAM wmake right product at the right time.");
+
+    let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
         Path::new(
             root_path,
@@ -179,8 +187,8 @@ fn main() {
         let mut cmd = Command::new("wmake")
             .arg("-j4")
             .current_dir(&target)
-            .stdout(Stdio::inherit())
-            .stderr(Stdio::inherit())
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
             .spawn()
             .unwrap();
         let status = cmd.wait();
