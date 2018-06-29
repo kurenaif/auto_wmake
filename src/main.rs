@@ -148,10 +148,10 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
 
 fn main() {
 
-    let app = App::new("auto_wmake")
+    let matches = App::new("auto_wmake")
         .version("0.1")
         .author("kurenaif <antyobido@gmail.com>")
-        .about("OpenFOAM wmake right product at the right time.");
+        .about("OpenFOAM wmake right product at the right time.").get_matches();
 
     let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
     let edges = get_edges(
