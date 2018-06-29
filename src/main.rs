@@ -2,7 +2,7 @@ extern crate regex;
 extern crate clap;
 
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::fs::{self, metadata, File};
 use std::error::Error;
 use std::env;
@@ -151,12 +151,18 @@ fn main() {
     let matches = App::new("auto_wmake")
         .version("0.1")
         .author("kurenaif <antyobido@gmail.com>")
-        .about("OpenFOAM wmake right product at the right time.").get_matches();
+        .about("OpenFOAM wmake right product at the right time.")
+        .arg(Arg::with_name("path")
+            .help("Build directory path. If omitted, the current directory is applied.")
+            .index(1))
+        .get_matches();
 
-    let root_path = "/home/ko/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/pimpleFoam";
+    println!("{:?}", env::current_dir().unwrap());
+    let arg_path = matches.value_of("path").unwrap_or(".");
+
     let edges = get_edges(
         Path::new(
-            root_path,
+            arg_path,
         ),
         &mut HashSet::new(),
     );
