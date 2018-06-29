@@ -187,9 +187,12 @@ fn main() {
     }
 
     let mut queue = get_zero_in_degree(&in_degree);
+    let size = graph.len();
 
+    let mut cnt = 0;
     while let Some(target) = queue.pop_front() {
-        println!("{}", target);
+        cnt += 1;
+        println!("[{}/{}] {}", cnt, size, target);
         let mut cmd = Command::new("wmake")
             .arg("-j4")
             .current_dir(&target)
