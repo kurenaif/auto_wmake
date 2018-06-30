@@ -172,9 +172,11 @@ fn main() {
             .index(1))
         .arg(Arg::with_name("detail")
             .short("d")
+            .long("detail")
             .help("Output wmake message in detail"))
         .arg(Arg::with_name("graph")
             .short("g")
+            .long("graph")
             .help("output dependency graph"))
         .get_matches();
 
