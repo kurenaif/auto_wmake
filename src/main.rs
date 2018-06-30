@@ -155,10 +155,14 @@ fn main() {
         .arg(Arg::with_name("path")
             .help("Build directory path. If omitted, the current directory is applied.")
             .index(1))
+        .arg(Arg::with_name("detail")
+            .short("d")
+            .help("Output wmake message in detail"))
         .get_matches();
 
     println!("{:?}", env::current_dir().unwrap());
     let arg_path = matches.value_of("path").unwrap_or(".");
+    let stdout_isdetail = if matches.is_present("detail") { true }  else { false };
 
     let edges = get_edges(
         Path::new(
@@ -196,8 +200,8 @@ fn main() {
         let mut cmd = Command::new("wmake")
             .arg("-j4")
             .current_dir(&target)
-            .stdin(Stdio::null())
-            .stdout(Stdio::null())
+            .stdout(if stdout_isdetail {Stdio::inherit() } else { Stdio::null() })
+            .stderr(Stdio::inherit())
             .spawn()
             .unwrap();
         let status = cmd.wait();
