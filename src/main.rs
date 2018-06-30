@@ -146,6 +146,21 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
     queue
 }
 
+fn output_dot_graph(graph: &HashMap<String, Vec<String>>){
+    println!("digraph dependensy{{");
+    let base_dir = env::var("WM_PROJECT_DIR").unwrap();
+    let base_path = Path::new(&base_dir);
+
+    for (from, tos) in graph {
+        for to in tos {
+            let from_path = Path::new(&from);
+            let to_path = Path::new(&to);
+            println!("\"{}\"->\"{}\"", from_path.strip_prefix(base_path).unwrap().to_str().unwrap(), to_path.strip_prefix(base_path).unwrap().to_str().unwrap());
+        }
+    }
+    println!("}}");
+}
+
 fn main() {
 
     let matches = App::new("auto_wmake")
@@ -158,11 +173,14 @@ fn main() {
         .arg(Arg::with_name("detail")
             .short("d")
             .help("Output wmake message in detail"))
+        .arg(Arg::with_name("graph")
+            .short("g")
+            .help("output dependency graph"))
         .get_matches();
 
-    println!("{:?}", env::current_dir().unwrap());
     let arg_path = matches.value_of("path").unwrap_or(".");
-    let stdout_isdetail = if matches.is_present("detail") { true }  else { false };
+    let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
+    let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
 
     let edges = get_edges(
         Path::new(
@@ -190,6 +208,11 @@ fn main() {
         graph.get_mut(&edge.1).unwrap().push(edge.0);
     }
 
+    if is_output_dependency_graph {
+        output_dot_graph(&graph);
+        return;
+    }
+
     let mut queue = get_zero_in_degree(&in_degree);
     let size = graph.len();
 
@@ -200,7 +223,7 @@ fn main() {
         let mut cmd = Command::new("wmake")
             .arg("-j4")
             .current_dir(&target)
-            .stdout(if stdout_isdetail {Stdio::inherit() } else { Stdio::null() })
+            .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
             .stderr(Stdio::inherit())
             .spawn()
             .unwrap();
