@@ -13,6 +13,8 @@ use std::process::{Command, Stdio};
 use clap::{App, Arg};
 use regex::Regex;
 
+// get make target from Make/file
+// e.g.) LIB = $(FORM_LIBBIN)/libsurfaceFilmModels => surfaceFilmModels
 fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
     let path = Path::new(dir_name).join("Make/files");
     let display = path.display();
@@ -36,12 +38,12 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
         if second != None {
             let first = first.unwrap().to_string();
             let second: String = Path::new(second.unwrap())
-                .file_name()
+                .file_name() // get /xxxx/xxx/xxx/"file_name"
                 .unwrap()
                 .to_string_lossy()
                 .into_owned()
                 .chars()
-                .skip(3)
+                .skip(3) // skip "lib"xxxxxx
                 .collect();
             if first == "LIB" || first == "EXE" {
                 return Some((first, second));
@@ -51,6 +53,8 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
     None
 }
 
+// get library dependencies from Make/option file
+// return the directory depend on `dir_name` for wmake.
 fn get_dependencies(dir_name: &Path) -> Vec<String> {
     let mut res: Vec<String> = Vec::new();
 
@@ -88,6 +92,8 @@ fn get_dependencies(dir_name: &Path) -> Vec<String> {
     res
 }
 
+// List directries under dir given by argument.
+// like `find -type d` command
 fn walk_dir(dir: &Path) -> LinkedList<String> {
     let mut res: LinkedList<String> = LinkedList::new();
 
@@ -110,6 +116,10 @@ fn walk_dir(dir: &Path) -> LinkedList<String> {
     res
 }
 
+// make edges from dependencies.
+// `memo` argument prevent infinite recursion.
+// `src_dir` is explorer directory. for find library dirctories.
+// `root_dir` is the directory you want to wmake in the end.
 fn get_edges(root_dir: &Path, memo: &mut HashSet<String>, src_dir: &String) -> LinkedList<(String, String)> {
     let mut res: LinkedList<(String, String)> = LinkedList::new();
 
@@ -134,6 +144,7 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>, src_dir: &String) -> L
     res
 }
 
+// get 0 in degree for initial queue. (if some directory in degree is 0, the directory can wmake unconditionally)
 fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
     let mut queue = VecDeque::new();
     for (node, degree) in in_degree {
@@ -144,6 +155,7 @@ fn get_zero_in_degree(in_degree: &HashMap<String, i32>) -> VecDeque<String> {
     queue
 }
 
+// standard output dot file for generate graph.
 fn output_dot_graph(graph: &HashMap<String, Vec<String>>){
     println!("digraph dependensy{{");
     let base_dir = env::var("WM_PROJECT_DIR").unwrap();
@@ -231,9 +243,12 @@ fn main() {
         return;
     }
 
+    // wmake queue.
     let mut queue = get_zero_in_degree(&in_degree);
+    // number to wmake
     let size = graph.len();
 
+    // number of wmake completed.
     let mut cnt = 0;
     while let Some(target) = queue.pop_front() {
         cnt += 1;
