@@ -189,7 +189,10 @@ fn main() {
     let arg_path = matches.value_of("path").unwrap_or(".");
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
     let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
-    let jobs_number = matches.value_of("jobs").unwrap_or("1").parse::<i32>().unwrap();
+    let jobs_number = match matches.value_of("jobs").unwrap_or("1").parse::<i32>() {
+        Ok(num) => num,
+        Err(_) => panic!("job number is not invalid")
+    };
     let jobs_string = "-j".to_owned() + &jobs_number.to_string();
 
     let src_dir = match env::var("FOAM_SRC") {
