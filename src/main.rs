@@ -178,11 +178,19 @@ fn main() {
             .short("g")
             .long("graph")
             .help("output dependency graph"))
+        .arg(Arg::with_name("jobs")
+            .short("j")
+            .short("jobs")
+            .value_name("N")
+            .help("allow several jobs at once")
+            .takes_value(true))
         .get_matches();
 
     let arg_path = matches.value_of("path").unwrap_or(".");
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
     let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
+    let jobs_number = matches.value_of("jobs").unwrap_or("1").parse::<i32>().unwrap();
+    let jobs_string = "-j".to_owned() + &jobs_number.to_string();
 
     let edges = get_edges(
         Path::new(
@@ -223,7 +231,7 @@ fn main() {
         cnt += 1;
         println!("[{}/{}] {}", cnt, size, target);
         let mut cmd = Command::new("wmake")
-            .arg("-j4")
+            .arg(&jobs_string)
             .current_dir(&target)
             .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
             .stderr(Stdio::inherit())
