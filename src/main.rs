@@ -2,16 +2,15 @@ extern crate regex;
 extern crate clap;
 
 use std::io::Read;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use std::fs::{self, metadata, File};
 use std::error::Error;
 use std::env;
 use std::ffi::OsStr;
-use std::collections::LinkedList;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{LinkedList, HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
-use clap::{App, Arg};
 
+use clap::{App, Arg};
 use regex::Regex;
 
 fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
