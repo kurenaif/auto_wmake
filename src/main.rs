@@ -192,7 +192,10 @@ fn main() {
     let jobs_number = matches.value_of("jobs").unwrap_or("1").parse::<i32>().unwrap();
     let jobs_string = "-j".to_owned() + &jobs_number.to_string();
 
-    let src_dir = env::var("FOAM_SRC").unwrap();
+    let src_dir = match env::var("FOAM_SRC") {
+        Ok(dir) => dir,
+        Err(_) => panic!("OpenFOAM-***/etc/basrhc is not read. execute `source OpenFOAM-***/etc/bashrc`")
+    };
 
     let edges = get_edges(
         Path::new(
