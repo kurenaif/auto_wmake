@@ -111,10 +111,9 @@ fn walk_dir(dir: &Path) -> LinkedList<String> {
     res
 }
 
-fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String, String)> {
+fn get_edges(root_dir: &Path, memo: &mut HashSet<String>, src_dir: &String) -> LinkedList<(String, String)> {
     let mut res: LinkedList<(String, String)> = LinkedList::new();
 
-    let src_dir = env::var("FOAM_SRC").unwrap();
     let make_candidate_dirs = walk_dir(Path::new(&src_dir));
     let mut library_dirs = HashMap::new();
     for dir in make_candidate_dirs {
@@ -125,7 +124,7 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>) -> LinkedList<(String,
             Some(nxt) => {
                 res.push_back((root_dir.to_string_lossy().into_owned(), nxt.to_string()));
                 if !memo.contains(&nxt.to_string()) {
-                    res.append(&mut get_edges(Path::new(nxt), memo));
+                    res.append(&mut get_edges(Path::new(nxt), memo, src_dir));
                 }
                 memo.insert(nxt.to_string());
             }
@@ -193,11 +192,14 @@ fn main() {
     let jobs_number = matches.value_of("jobs").unwrap_or("1").parse::<i32>().unwrap();
     let jobs_string = "-j".to_owned() + &jobs_number.to_string();
 
+    let src_dir = env::var("FOAM_SRC").unwrap();
+
     let edges = get_edges(
         Path::new(
             arg_path,
         ),
         &mut HashSet::new(),
+        &src_dir
     );
     let mut graph : HashMap<String, Vec<String>> = HashMap::new();
     let mut in_degree : HashMap<String, i32> = HashMap::new();
