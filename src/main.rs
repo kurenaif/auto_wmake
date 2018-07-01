@@ -253,8 +253,8 @@ fn main() {
             .stderr(Stdio::inherit())
             .spawn()
             .unwrap();
-        let status = cmd.wait();
-        println!("Exited with status {:?}", status);
+        let status = cmd.wait().expect(&("failed to wmake ".to_owned() + &target));
+        println!("Ok {}", status);
         let nexts = graph.get_mut(&target).unwrap();
         for nxt in nexts {
             *in_degree.get_mut(nxt).unwrap() -= 1;
