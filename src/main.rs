@@ -222,20 +222,12 @@ fn main() {
     let mut in_degree : HashMap<String, i32> = HashMap::new();
 
     for edge in edges {
-        if !graph.contains_key(&edge.0) {
-            graph.insert(edge.0.clone(), Vec::new());
-        }
-        if !graph.contains_key(&edge.1) {
-            graph.insert(edge.1.clone(), Vec::new());
-        }
-        if !in_degree.contains_key(&edge.0) {
-            in_degree.insert(edge.0.clone(), 0);
-        }
-        if !in_degree.contains_key(&edge.1) {
-            in_degree.insert(edge.1.clone(), 0);
-        }
-        *in_degree.get_mut(&edge.0).unwrap() += 1;
-        graph.get_mut(&edge.1).unwrap().push(edge.0);
+        in_degree.entry(edge.1.clone()).or_insert(0);
+        let deg = in_degree.entry(edge.0.clone()).or_insert(0);
+        *deg += 1;
+        graph.entry(edge.0.clone()).or_insert(Vec::new());
+        let from = graph.entry(edge.1.clone()).or_insert(Vec::new());
+        from.push(edge.0);
     }
 
     if is_output_dependency_graph {
@@ -252,6 +244,7 @@ fn main() {
     let mut cnt = 0;
     while let Some(target) = queue.pop_front() {
         cnt += 1;
+        // output progress
         println!("[{}/{}] {}", cnt, size, target);
         let mut cmd = Command::new("wmake")
             .arg(&jobs_string)
