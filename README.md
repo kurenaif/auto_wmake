@@ -70,6 +70,10 @@ $ dot -Tpng graph.dot -o graph.png
 Please don't install from `cargo --git https://github.com/kurenaif/auto_wmake`.
 (If you have done `init`, you can install from `cargo --git`)
 
+I'm sorry ... I have tested only in ubuntu 18.10.
+If you can't install or do not work.
+Please tell me about it.
+
 ```
 $ source /path/to/OpenFOAM-xxx/etc/bashrc
 $ git clone https://github.com/kurenaif/auto_wmake
