@@ -223,7 +223,6 @@ fn check_recommend(target: &str) -> Result<String, String> {
         for dir in make_candidate_dirs {
             let temp = get_make_target(Path::new(&dir)).unwrap();
             let dist = levenshtein(&temp.1, target);
-            println!("{}, {}", temp.1, dist);
             if min_distance.0 > dist {
                 min_distance = (dist, String::from(temp.1), String::from(dir));
             }
@@ -243,7 +242,7 @@ fn main() {
         .version("0.1")
         .author("kurenaif <antyobido@gmail.com>")
         .about("OpenFOAM wmake right product at the right time.")
-        .arg(Arg::with_name("path")
+        .arg(Arg::with_name("path/app")
             .help("Build directory path. If omitted, the current directory is applied.")
             .index(1)
             .required(true))
@@ -263,11 +262,6 @@ fn main() {
             .takes_value(true))
         .get_matches();
 
-    let arg_path = match check_recommend(matches.value_of("path").unwrap_or(".")){
-        Ok(path) => path,
-        Err(message) => {eprintln!("{}", message); std::process::exit(1)}
-    };
-
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
     let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
     let jobs_number = match matches.value_of("jobs").unwrap_or("1").parse::<i32>() {
@@ -278,7 +272,12 @@ fn main() {
 
     let src_dir = match env::var("FOAM_SRC") {
         Ok(dir) => dir,
-        Err(_) => panic!("OpenFOAM-***/etc/basrhc is not read. execute `source OpenFOAM-***/etc/bashrc`")
+        Err(_) => {eprintln!("OpenFOAM-***/etc/basrhc is not read. execute `source OpenFOAM-***/etc/bashrc`"); std::process::exit(1)}
+    };
+
+    let arg_path = match check_recommend(matches.value_of("path/app").unwrap_or(".")){
+        Ok(path) => path,
+        Err(message) => {eprintln!("{}", message); std::process::exit(1)}
     };
 
     let edges = get_edges(
