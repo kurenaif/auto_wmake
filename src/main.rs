@@ -171,6 +171,9 @@ fn output_dot_graph(graph: &HashMap<String, Vec<String>>){
     println!("}}");
 }
 
+// wmake target
+// jobs_string: -jn
+// is_stdout_detail: is output wmake stream message
 fn wmake(target: &str, jobs_string: &str, is_stdout_detail: bool){
     let mut cmd = Command::new("wmake")
         .arg(&jobs_string)
