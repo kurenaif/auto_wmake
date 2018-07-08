@@ -171,6 +171,21 @@ fn output_dot_graph(graph: &HashMap<String, Vec<String>>){
     println!("}}");
 }
 
+fn wmake(target: &str, jobs_string: &str, is_stdout_detail: bool){
+    let mut cmd = Command::new("wmake")
+        .arg(&jobs_string)
+        .current_dir(&target)
+        .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+    let status = cmd.wait().expect(&("failed to wmake ".to_owned() + &target));
+    if status.code().unwrap() != 0 {
+        panic!("failed to wmake {}", target);
+    }
+    println!("Ok {}", status);
+}
+
 fn main() {
 
     let matches = App::new("auto_wmake")
@@ -246,18 +261,7 @@ fn main() {
         cnt += 1;
         // output progress
         println!("[{}/{}] {}", cnt, size, target);
-        let mut cmd = Command::new("wmake")
-            .arg(&jobs_string)
-            .current_dir(&target)
-            .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
-            .stderr(Stdio::inherit())
-            .spawn()
-            .unwrap();
-        let status = cmd.wait().expect(&("failed to wmake ".to_owned() + &target));
-        if status.code().unwrap() != 0 {
-            panic!("failed to wmake {}", target);
-        }
-        println!("Ok {}", status);
+        wmake(&target, &jobs_string, is_stdout_detail);
         let nexts = graph.get_mut(&target).unwrap();
         for nxt in nexts {
             *in_degree.get_mut(nxt).unwrap() -= 1;
