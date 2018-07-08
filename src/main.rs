@@ -254,6 +254,9 @@ fn main() {
             .spawn()
             .unwrap();
         let status = cmd.wait().expect(&("failed to wmake ".to_owned() + &target));
+        if status.code().unwrap() != 0 {
+            panic!("failed to wmake {}", target);
+        }
         println!("Ok {}", status);
         let nexts = graph.get_mut(&target).unwrap();
         for nxt in nexts {
