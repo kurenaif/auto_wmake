@@ -1,5 +1,6 @@
 extern crate regex;
 extern crate clap;
+extern crate strsim;
 
 use std::io::Read;
 use std::path::{Path};
@@ -9,6 +10,7 @@ use std::env;
 use std::ffi::OsStr;
 use std::collections::{LinkedList, HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
+use strsim::levenshtein;
 
 use clap::{App, Arg};
 use regex::Regex;
@@ -37,14 +39,33 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
         let second = split_line.next();
         if second != None {
             let first = first.unwrap().to_string();
-            let second: String = Path::new(second.unwrap())
-                .file_name() // get /xxxx/xxx/xxx/"file_name"
-                .unwrap()
-                .to_string_lossy()
-                .into_owned()
-                .chars()
-                .skip(3) // skip "lib"xxxxxx
-                .collect();
+            let second = match &*first {
+                "LIB" => 
+                Path::new(second.unwrap())
+                    .file_name() // get /xxxx/xxx/xxx/"file_name"
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned()
+                    .chars()
+                    .skip(3) // skip "lib"xxxxxx
+                    .collect(),
+                "EXE" => 
+                Path::new(second.unwrap())
+                    .file_name() // get /xxxx/xxx/xxx/"file_name"
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned()
+                    .chars()
+                    .collect(),
+                _  => 
+                Path::new(second.unwrap())
+                    .file_name() // get /xxxx/xxx/xxx/"file_name"
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned()
+                    .chars()
+                    .collect()
+            };
             if first == "LIB" || first == "EXE" {
                 return Some((first, second));
             }
@@ -189,8 +210,35 @@ fn wmake(target: &str, jobs_string: &str, is_stdout_detail: bool){
     println!("Ok {}", status);
 }
 
-fn main() {
+// check path and search path from app name. if can't find path, reccomend app.
+fn check_recommend(target: &str) -> Result<String, String> {
+    let make_path = Path::new(target).join("Make"); // make path
+    if make_path.exists(){
+        return Ok(String::from(target));
+    }
 
+    let mut min_distance = (usize::max_value(), String::from(""), String::from(""));
+    if !make_path.exists() {
+        let make_candidate_dirs = walk_dir(Path::new(&env::var("FOAM_APP").unwrap()));
+        for dir in make_candidate_dirs {
+            let temp = get_make_target(Path::new(&dir)).unwrap();
+            let dist = levenshtein(&temp.1, target);
+            println!("{}, {}", temp.1, dist);
+            if min_distance.0 > dist {
+                min_distance = (dist, String::from(temp.1), String::from(dir));
+            }
+        }
+    }
+
+    if min_distance.0 == 0{
+        Ok(min_distance.2)
+    }
+    else{
+        Err("Error app/Path \"".to_owned() + target + "\" is not found. Did you mean \"" + min_distance.1.as_str() + "\"?")
+    }
+}
+
+fn main() {
     let matches = App::new("auto_wmake")
         .version("0.1")
         .author("kurenaif <antyobido@gmail.com>")
@@ -215,12 +263,16 @@ fn main() {
             .takes_value(true))
         .get_matches();
 
-    let arg_path = matches.value_of("path").unwrap_or(".");
+    let arg_path = match check_recommend(matches.value_of("path").unwrap_or(".")){
+        Ok(path) => path,
+        Err(message) => {eprintln!("{}", message); std::process::exit(1)}
+    };
+
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
     let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
     let jobs_number = match matches.value_of("jobs").unwrap_or("1").parse::<i32>() {
         Ok(num) => num,
-        Err(_) => panic!("job number is not invalid")
+        Err(_) => {eprintln!("job number is not invalid"); std::process::exit(1)}
     };
     let jobs_string = "-j".to_owned() + &jobs_number.to_string();
 
@@ -231,7 +283,7 @@ fn main() {
 
     let edges = get_edges(
         Path::new(
-            arg_path,
+            &arg_path,
         ),
         &mut HashSet::new(),
         &src_dir
