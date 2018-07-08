@@ -86,3 +86,7 @@ $ cargo install
 
 [OpenFOAM-dev](https://github.com/OpenFOAM/OpenFOAM-dev)
 [OpenFOAM wiki](http://openfoamwiki.net/index.php/Installation)
+
+## LICENSE
+
+[MIT](./LICENSE)
