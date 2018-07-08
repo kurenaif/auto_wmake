@@ -1,0 +1,7 @@
+#!/bin/sh
+
+(cd $WM_PROJECT_DIR/wmake/src && make)
+
+$FOAM_SRC/Pstream/Allwmake
+$FOAM_SRC/OSspecific/${WM_OSTYPE:-POSIX}/Allwmake
+
