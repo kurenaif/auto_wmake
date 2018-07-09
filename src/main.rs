@@ -11,7 +11,6 @@ use std::ffi::OsStr;
 use std::collections::{LinkedList, HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
 use strsim::levenshtein;
-
 use clap::{App, Arg};
 use regex::Regex;
 
@@ -237,6 +236,48 @@ fn check_recommend(target: &str) -> Result<String, String> {
     }
 }
 
+// initial build for directory which is difficult to make.
+fn init_build(jobs_string: &str, is_stdout_detail: bool){
+    println!("make {}", env::var("WM_PROJECT_DIR").unwrap()+"/wmake/src");
+    let mut cmd = Command::new("make")
+        .arg(&jobs_string)
+        .current_dir(env::var("WM_PROJECT_DIR").unwrap()+"/wmake/src")
+        .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+    let status = cmd.wait().expect(&("failed to make wmake"));
+    if status.code().unwrap() != 0 {
+        panic!("failed to make wmake");
+    }
+
+    println!("Allwmake {}", env::var("FOAM_SRC").unwrap() + "/Pstream");
+    let mut cmd = Command::new("./Allwmake")
+        .arg(&jobs_string)
+        .current_dir(env::var("FOAM_SRC").unwrap() + "/Pstream")
+        .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+    let status = cmd.wait().expect(&("failed to Allwmake Pstream"));
+    if status.code().unwrap() != 0 {
+        panic!("failed to make wmake");
+    }
+
+    println!("{}", env::var("FOAM_SRC").unwrap() + "/OSspecific/" + env::var("WM_OSTYPE").unwrap_or("POSIX".to_owned()).as_str());
+    let mut cmd = Command::new("./Allwmake")
+        .arg(&jobs_string)
+        .current_dir(env::var("FOAM_SRC").unwrap() + "/OSspecific/" + env::var("WM_OSTYPE").unwrap_or("POSIX".to_owned()).as_str())
+        .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
+        .stderr(Stdio::inherit())
+        .spawn()
+        .unwrap();
+    let status = cmd.wait().expect(&("failed to Allwmake OSspecific"));
+    if status.code().unwrap() != 0 {
+        panic!("failed to make OSspecific");
+    }
+}
+
 fn main() {
     let matches = App::new("auto_wmake")
         .version("0.1")
@@ -256,9 +297,14 @@ fn main() {
             .help("output dependency graph"))
         .arg(Arg::with_name("jobs")
             .short("j")
-            .short("jobs")
+            .long("jobs")
             .value_name("N")
             .help("allow several jobs at once")
+            .takes_value(true))
+        .arg(Arg::with_name("skip-init")
+            .short("s")
+            .long("skip-init")
+            .help("skip initial make")
             .takes_value(true))
         .get_matches();
 
@@ -269,6 +315,7 @@ fn main() {
         Err(_) => {eprintln!("job number is not invalid"); std::process::exit(1)}
     };
     let jobs_string = "-j".to_owned() + &jobs_number.to_string();
+
 
     let src_dir = match env::var("FOAM_SRC") {
         Ok(dir) => dir,
@@ -302,6 +349,10 @@ fn main() {
     if is_output_dependency_graph {
         output_dot_graph(&graph);
         return;
+    }
+
+    if !matches.is_present("skip-init") {
+        init_build(jobs_string.as_str(), is_stdout_detail);
     }
 
     // wmake queue.
