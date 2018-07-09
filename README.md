@@ -76,7 +76,7 @@ If you can't install or do not work.
 Please tell me about it.
 
 ```
-$ cargo --git https://github.com/kurenaif/auto_wmake`.
+$ cargo --git https://github.com/kurenaif/auto_wmake
 ```
 
 ## See Also
