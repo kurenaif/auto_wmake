@@ -65,6 +65,15 @@ $ dot -Tpng graph.dot -o graph.png
 
 ![](./graph.png)
 
+### typo
+
+When you typo app name, this program suggest command.
+
+```
+auto_wmake icoForm
+Error app/Path "icoForm" is not found. Did you mean "icoFoam"?
+```
+
 
 ## Installation
 
