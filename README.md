@@ -33,7 +33,8 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -j <N>        allow several jobs at once
+    -j, --jobs <N>                 allow several jobs at once
+    -s, --skip-init <skip-init>    skip initial make
 
 ARGS:
     <path/app>    Build directory path. If omitted, the current directory is applied.
