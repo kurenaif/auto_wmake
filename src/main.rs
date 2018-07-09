@@ -284,7 +284,7 @@ fn main() {
         .author("kurenaif <antyobido@gmail.com>")
         .about("OpenFOAM wmake right product at the right time.")
         .arg(Arg::with_name("path/app")
-            .help("Build directory path. If omitted, the current directory is applied.")
+            .help("Build directory path or application name (in FOAM_APP). If omitted, the current directory is applied.")
             .index(1)
             .required(true))
         .arg(Arg::with_name("detail")

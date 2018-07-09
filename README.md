@@ -75,16 +75,12 @@ If you can't install or do not work.
 Please tell me about it.
 
 ```
-$ source /path/to/OpenFOAM-xxx/etc/bashrc
-$ git clone https://github.com/kurenaif/auto_wmake
-$ cd auto_wmake
-$ ./init
-$ cargo install
+$ cargo --git https://github.com/kurenaif/auto_wmake`.
 ```
 
 ## See Also
 
-[OpenFOAM-dev](https://github.com/OpenFOAM/OpenFOAM-dev)
+[OpenFOAM-dev](https://github.com/OpenFOAM/OpenFOAM-dev)  
 [OpenFOAM wiki](http://openfoamwiki.net/index.php/Installation)
 
 ## LICENSE
