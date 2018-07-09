@@ -69,7 +69,7 @@ $ dot -Tpng graph.dot -o graph.png
 ## Installation
 
 ```
-$ cargo --git https://github.com/kurenaif/auto_wmake
+$ cargo install --git https://github.com/kurenaif/auto_wmake
 ```
 
 ## See Also
