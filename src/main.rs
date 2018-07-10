@@ -21,7 +21,7 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
     let display = path.display();
 
     let mut file = match File::open(&path) {
-        Err(why) => panic!("couldn't open {}: {}", display, Error::description(&why)),
+        Err(why) => {eprintln!("warning: couldn't open {}: {}", display, Error::description(&why)); return None}
         Ok(file) => file,
     };
 
@@ -30,6 +30,7 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
         Err(why) => panic!("couldn't read {}: {}", display, Error::description(&why)),
         Ok(_) => s,
     };
+
 
     for line in contents.as_str().split('\n') {
         let line = str::replace(line, " ", "");
@@ -57,13 +58,7 @@ fn get_make_target(dir_name: &Path) -> Option<(String, String)> {
                     .chars()
                     .collect(),
                 _  => 
-                Path::new(second.unwrap())
-                    .file_name() // get /xxxx/xxx/xxx/"file_name"
-                    .unwrap()
-                    .to_string_lossy()
-                    .into_owned()
-                    .chars()
-                    .collect()
+                    continue
             };
             if first == "LIB" || first == "EXE" {
                 return Some((first, second));
@@ -127,8 +122,9 @@ fn walk_dir(dir: &Path) -> LinkedList<String> {
             }
             let nxt = String::from(path.path().to_str().unwrap());
             let nxt = Path::new(&nxt);
-            if metadata(nxt).unwrap().is_dir() {
-                res.append(&mut walk_dir(nxt));
+            match metadata(nxt) {
+                Ok(temp) => if temp.is_dir() {res.append(&mut walk_dir(nxt));},
+                Err(err) => {},
             }
         },
     }
@@ -146,7 +142,11 @@ fn get_edges(root_dir: &Path, memo: &mut HashSet<String>, src_dir: &String) -> L
     let make_candidate_dirs = walk_dir(Path::new(&src_dir));
     let mut library_dirs = HashMap::new();
     for dir in make_candidate_dirs {
-        library_dirs.insert(get_make_target(Path::new(&dir)).unwrap().1, dir);
+        match get_make_target(Path::new(&dir)) {
+            Some(target) => {library_dirs.insert(target.1, dir);}
+            None => eprintln!("warning: {}/Make/files not found.", dir)
+        }
+        
     }
     for dir in get_dependencies(root_dir) {
         match library_dirs.get(&dir) {
@@ -314,7 +314,11 @@ fn main() {
         Ok(num) => num,
         Err(_) => {eprintln!("job number is not invalid"); std::process::exit(1)}
     };
-    let jobs_string = "-j".to_owned() + &jobs_number.to_string();
+    let jobs_string = if jobs_number != 1 {
+        "-j".to_owned() + &jobs_number.to_string()
+    } else {
+        "".to_owned()
+    };
 
 
     let src_dir = match env::var("FOAM_SRC") {
