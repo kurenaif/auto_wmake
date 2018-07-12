@@ -304,7 +304,7 @@ fn main() {
         .arg(Arg::with_name("skip-init")
             .short("s")
             .long("skip-init")
-            .help("skip initial make")
+            .help("skip initial make"))
         .get_matches();
 
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
