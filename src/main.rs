@@ -11,7 +11,7 @@ use std::ffi::OsStr;
 use std::collections::{LinkedList, HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
 use strsim::levenshtein;
-use clap::{SubCommand, App, Arg};
+use clap::{App, Arg};
 use regex::Regex;
 
 // get make target from Make/file
