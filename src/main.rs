@@ -254,7 +254,6 @@ fn list_apps() -> Vec<String> {
 fn init_build(jobs_string: &str, is_stdout_detail: bool){
     println!("make {}", env::var("WM_PROJECT_DIR").unwrap()+"/wmake/src");
     let mut cmd = Command::new("make")
-        .arg(&jobs_string)
         .current_dir(env::var("WM_PROJECT_DIR").unwrap()+"/wmake/src")
         .stdout(if is_stdout_detail {Stdio::inherit() } else { Stdio::null() })
         .stderr(Stdio::inherit())
@@ -262,6 +261,7 @@ fn init_build(jobs_string: &str, is_stdout_detail: bool){
         .unwrap();
     let status = cmd.wait().expect(&("failed to make wmake"));
     if status.code().unwrap() != 0 {
+        println!("{:?}", status);
         panic!("failed to make wmake");
     }
 
