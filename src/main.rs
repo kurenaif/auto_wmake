@@ -11,7 +11,7 @@ use std::ffi::OsStr;
 use std::collections::{LinkedList, HashMap, HashSet, VecDeque};
 use std::process::{Command, Stdio};
 use strsim::levenshtein;
-use clap::{App, Arg};
+use clap::{SubCommand, App, Arg};
 use regex::Regex;
 
 // get make target from Make/file
@@ -124,7 +124,7 @@ fn walk_dir(dir: &Path) -> LinkedList<String> {
             let nxt = Path::new(&nxt);
             match metadata(nxt) {
                 Ok(temp) => if temp.is_dir() {res.append(&mut walk_dir(nxt));},
-                Err(err) => {},
+                Err(_) => {},
             }
         },
     }
@@ -236,6 +236,20 @@ fn check_recommend(target: &str) -> Result<String, String> {
     }
 }
 
+// show apps
+fn list_apps() -> Vec<String> {
+    let mut res : Vec<String> = Vec::new();
+
+    let make_candidate_dirs = walk_dir(Path::new(&env::var("FOAM_APP").unwrap()));
+    for dir in make_candidate_dirs {
+        let name = get_make_target(Path::new(&dir)).unwrap().1;
+        res.push(name);
+    }
+
+    res
+}
+
+
 // initial build for directory which is difficult to make.
 fn init_build(jobs_string: &str, is_stdout_detail: bool){
     println!("make {}", env::var("WM_PROJECT_DIR").unwrap()+"/wmake/src");
@@ -285,8 +299,7 @@ fn main() {
         .about("OpenFOAM wmake right product at the right time.")
         .arg(Arg::with_name("path/app")
             .help("Build directory path or application name (in FOAM_APP). If omitted, the current directory is applied.")
-            .index(1)
-            .required(true))
+            .index(1))
         .arg(Arg::with_name("detail")
             .short("d")
             .long("detail")
@@ -305,7 +318,20 @@ fn main() {
             .short("s")
             .long("skip-init")
             .help("skip initial make"))
+        .arg(Arg::with_name("list-apps")
+            .short("l")
+            .long("list")
+            .help("list apps"))
         .get_matches();
+    
+    if matches.is_present("list-apps") {
+        let mut apps = list_apps();
+        apps.sort_unstable();
+        for app in &apps {
+            println!("{}", app);
+        }
+        return;
+    }
 
     let is_stdout_detail = if matches.is_present("detail") { true }  else { false };
     let is_output_dependency_graph = if matches.is_present("graph") { true }  else { false };
