@@ -322,6 +322,9 @@ fn main() {
             .short("l")
             .long("list")
             .help("list apps"))
+        .arg(Arg::with_name("which")
+            .long("which")
+            .help("show app path"))
         .get_matches();
     
     if matches.is_present("list-apps") {
@@ -344,7 +347,6 @@ fn main() {
     } else {
         "".to_owned()
     };
-
 
     let src_dir = match env::var("FOAM_SRC") {
         Ok(dir) => dir,
