@@ -24,20 +24,23 @@ but I think you will not use all of them.
 
 ```
 USAGE:
-    auto_wmake [FLAGS] [OPTIONS] <path/app>
+    auto_wmake [FLAGS] [OPTIONS] [path/app]
 
 FLAGS:
-    -d, --detail     Output wmake message in detail
-    -g, --graph      output dependency graph
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+    -d, --detail       Output wmake message in detail
+    -g, --graph        output dependency graph
+    -h, --help         Prints help information
+    -l, --list         list apps
+    -s, --skip-init    skip initial make
+    -V, --version      Prints version information
+    -w, --which        show app path
 
 OPTIONS:
-    -j, --jobs <N>                 allow several jobs at once
-    -s, --skip-init <skip-init>    skip initial make
+    -j, --jobs <N>    allow several jobs at once
 
 ARGS:
-    <path/app>    Build directory path. If omitted, the current directory is applied.
+    <path/app>    Build directory path or application name (in FOAM_APP). If omitted, the current directory is
+                  applied.
 ```
 
 ### Example
@@ -54,7 +57,7 @@ auto_wmake -j4 icoFoam
 auto_wmake -d /path/to/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible/icoFoam
 ```
 
-### Output dependensy graph of icoFoam
+#### Output dependensy graph of icoFoam
 
 depend on [graphviz](http://www.graphviz.org/)
 
@@ -65,7 +68,7 @@ $ dot -Tpng graph.dot -o graph.png
 
 ![](./graph.png)
 
-### typo
+#### typo
 
 When you typo app name, this program suggest command.
 
@@ -73,6 +76,25 @@ When you typo app name, this program suggest command.
 auto_wmake icoForm
 Error app/Path "icoForm" is not found. Did you mean "icoFoam"?
 ```
+
+#### print where the source file is located
+
+```
+$ auto_wmake --which pimpleFoam
+/home/kurenaif/OpenFOAM/OpenFOAM-2.4.0/applications/solvers/incompressible/pimpleFoam
+```
+
+**Note**
+
+Linux's `which` command can print where the *Executable file* but can't print *source dir*.
+If you want to get the path of app's source dir, you can use `auto_wmake --whcih` command :)
+
+```
+$ which pimpleFoam
+/home/kurenaif/OpenFOAM/OpenFOAM-2.4.0/platforms/linux64Gcc5DPOpt/bin/pimpleFoam
+# It's binary file's path
+```
+
 
 
 ## Installation
