@@ -323,6 +323,7 @@ fn main() {
             .long("list")
             .help("list apps"))
         .arg(Arg::with_name("which")
+            .short("w")
             .long("which")
             .help("show app path"))
         .get_matches();
@@ -357,6 +358,11 @@ fn main() {
         Ok(path) => path,
         Err(message) => {eprintln!("{}", message); std::process::exit(1)}
     };
+
+    if matches.is_present("which") {
+        println!("{}", arg_path.as_str());
+        return;
+    }
 
     let edges = get_edges(
         Path::new(
