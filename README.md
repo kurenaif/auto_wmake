@@ -59,7 +59,7 @@ auto_wmake -d /path/to/OpenFOAM/OpenFOAM-dev/applications/solvers/incompressible
 
 #### Output dependensy graph of icoFoam
 
-depend on [graphviz](http://www.graphviz.org/)
+[graphviz](http://www.graphviz.org/) is required.
 
 ```
 $ auto_wmake -g icoFoam > graph.dot
